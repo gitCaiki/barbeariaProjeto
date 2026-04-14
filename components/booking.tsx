@@ -188,44 +188,82 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
-                  {services.map((service) => {
-                    const isSelected = selectedServices.some(s => s.id === service.id)
-                    return (
-                      <div
-                        key={service.id}
-                        className={cn(
-                          "p-4 rounded-lg border cursor-pointer transition-all",
-                          isSelected
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                        onClick={() => onToggleService(service)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-foreground">{service.name}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
-                            <div className="flex items-center gap-3 mt-2 text-sm">
-                              <span className="text-primary font-semibold">{service.price}</span>
-                              <span className="text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {service.duration}
-                              </span>
+                <div className="mx-auto max-w-3xl rounded-xl border border-zinc-800/60 bg-card/60 backdrop-blur-sm overflow-hidden max-h-96 overflow-y-auto">
+                  <div className="divide-y divide-zinc-800/60">
+                    {services.map((service) => {
+                      const isSelected = selectedServices.some((s) => s.id === service.id)
+                      const initials = service.name
+                        .split(" ")
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((p) => p[0])
+                        .join("")
+                        .toUpperCase()
+
+                      return (
+                        <div
+                          key={service.id}
+                          className={cn(
+                            "group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-4 transition-colors",
+                            "hover:bg-zinc-900/30",
+                            isSelected && "bg-primary/10"
+                          )}
+                          onClick={() => onToggleService(service)}
+                          role="button"
+                          tabIndex={0}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div
+                              className={cn(
+                                "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                                isSelected
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-zinc-800/80 text-zinc-100"
+                              )}
+                            >
+                              {isSelected ? (
+                                <Check className="w-5 h-5" />
+                              ) : (
+                                <span className="text-xs font-semibold">{initials}</span>
+                              )}
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="text-foreground font-medium truncate">{service.name}</p>
+                              <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-400">
+                                <span className="text-green-500 font-semibold whitespace-nowrap">
+                                  {service.price}
+                                </span>
+                                <span className="text-zinc-600">•</span>
+                                <span className="flex items-center gap-1 whitespace-nowrap">
+                                  <Clock className="w-4 h-4" />
+                                  {service.duration}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <div className={cn(
-                            "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-3",
-                            isSelected
-                              ? "border-primary bg-primary"
-                              : "border-muted-foreground"
-                          )}>
-                            {isSelected && <Check className="w-4 h-4 text-primary-foreground" />}
+
+                          <div className="flex items-center justify-end">
+                            <button
+                              type="button"
+                              className={cn(
+                                "px-4 py-2 rounded-md text-sm font-medium text-white",
+                                isSelected
+                                  ? "bg-blue-600 hover:bg-blue-500"
+                                  : "bg-blue-600 hover:bg-blue-500"
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                onToggleService(service)
+                              }}
+                            >
+                              {isSelected ? "Remover" : "Agendar"}
+                            </button>
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {selectedServices.length > 0 && (

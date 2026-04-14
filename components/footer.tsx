@@ -1,10 +1,23 @@
 "use client"
 
 import Link from "next/link"
-import { Scissors, Instagram, Facebook, Phone, MapPin, Clock } from "lucide-react"
+import Image from "next/image"
+import { Instagram, Facebook, Phone, MapPin, Clock } from "lucide-react"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith("#")) return
+
+    e.preventDefault()
+    const id = href.slice(1)
+    const el = document.getElementById(id)
+    if (el) {
+      history.replaceState(null, "", href)
+      el.scrollIntoView({ behavior: "smooth" })
+    }
+  }
 
   return (
     <footer className="bg-card border-t border-border">
@@ -13,15 +26,21 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                <Scissors className="w-6 h-6 text-primary-foreground" />
+              <div className="w-12 h-12 rounded-full bg-primary overflow-hidden">
+                <Image
+                  src="/images/services/Gemini_Generated_Image_rooeitrooeitrooe.png"
+                  alt="Studio Feel"
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-xl font-serif font-bold text-foreground">
                   Studio Feel
                 </span>
                 <span className="text-xs text-muted-foreground tracking-widest uppercase">
-                  by Thiago Ferreira
+                  by Ferreira
                 </span>
               </div>
             </Link>
@@ -32,21 +51,18 @@ export function Footer() {
             {/* Social Links */}
             <div className="flex items-center gap-4 mt-6">
               <a
-                href="#"
+                href="https://www.instagram.com/thferreira_barbercg/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
+                href="https://api.whatsapp.com/send/?phone=556781421692&text&type=phone_number&app_absent=0"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="WhatsApp"
               >
@@ -59,19 +75,25 @@ export function Footer() {
           <div>
             <h4 className="text-foreground font-semibold mb-4">Links Rápidos</h4>
             <nav className="flex flex-col gap-3">
-              <Link href="#inicio" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link
+                href="#inicio"
+                className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                onClick={(e) => handleAnchorClick(e, "#inicio")}
+              >
                 Início
               </Link>
-              <Link href="#servicos" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                Serviços
-              </Link>
-              <Link href="#galeria" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link
+                href="#galeria"
+                className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                onClick={(e) => handleAnchorClick(e, "#galeria")}
+              >
                 Galeria
               </Link>
-              <Link href="#agendar" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                Agendar
-              </Link>
-              <Link href="#meus-agendamentos" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+              <Link
+                href="#meus-agendamentos"
+                className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                onClick={(e) => handleAnchorClick(e, "#meus-agendamentos")}
+              >
                 Meus Agendamentos
               </Link>
             </nav>
@@ -84,15 +106,15 @@ export function Footer() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <p className="text-muted-foreground text-sm">
-                  Rua Exemplo, 123<br />
-                  Bairro Centro<br />
-                  Cidade - UF, 00000-000
+                  Av. dos Crisântemos, 293<br />
+                  Vila Sobrinho<br />
+                  Campo Grande - MS, 79110-580
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                 <p className="text-muted-foreground text-sm">
-                  (00) 00000-0000
+                  (67) 98142-1692
                 </p>
               </div>
             </div>
@@ -106,14 +128,14 @@ export function Footer() {
                 <Clock className="w-5 h-5 text-primary flex-shrink-0" />
                 <div className="text-sm">
                   <p className="text-foreground">Segunda a Sexta</p>
-                  <p className="text-muted-foreground">09:00 - 20:00</p>
+                  <p className="text-muted-foreground">09:00 - 19:00</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Clock className="w-5 h-5 text-primary flex-shrink-0" />
                 <div className="text-sm">
                   <p className="text-foreground">Sábado</p>
-                  <p className="text-muted-foreground">09:00 - 18:00</p>
+                  <p className="text-muted-foreground">09:00 - 19:00</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -131,16 +153,11 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-muted-foreground text-sm text-center md:text-left">
-              © {currentYear} Studio Feel by Thiago Ferreira. Todos os direitos reservados.
+              © {currentYear} Studio Feel by Ferreira. Todos os direitos reservados.
             </p>
-            <div className="flex items-center gap-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                Política de Privacidade
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                Termos de Uso
-              </Link>
-            </div>
+            <p className="text-sm text-muted-foreground text-center md:text-right">
+              Desenvolvido por <span className="text-primary font-medium">Caiki Lemos</span>
+            </p>
           </div>
         </div>
       </div>

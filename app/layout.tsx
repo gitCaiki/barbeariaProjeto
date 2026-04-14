@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Studio Feel by Thiago Ferreira | Barbearia Premium',
+  title: 'Studio Feel by Ferreira | Barbearia Premium',
   description: 'Experiência única em cortes masculinos, barba e tratamentos. Agende seu horário no Studio Feel.',
   generator: 'v0.app',
   icons: {

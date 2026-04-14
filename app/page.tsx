@@ -46,14 +46,14 @@ export default function Home() {
           onSelectService={handleToggleService}
           selectedServices={selectedServices}
         />
-        
-        <Gallery />
-        
+
         <Booking 
           selectedServices={selectedServices}
           onToggleService={handleToggleService}
           onAddAppointment={handleAddAppointment}
         />
+
+        <Gallery />
         
         <MyAppointments 
           appointments={appointments}

@@ -12,18 +12,14 @@ interface GalleryImage {
 
 // Placeholder para imagens da galeria - substitua pelos cortes reais
 const galleryImages: GalleryImage[] = [
-  { id: 1, src: "/images/gallery/cut-1.jpg", alt: "Corte degradê", category: "Degradê" },
-  { id: 2, src: "/images/gallery/cut-2.jpg", alt: "Corte social", category: "Social" },
-  { id: 3, src: "/images/gallery/cut-3.jpg", alt: "Barba modelada", category: "Barba" },
-  { id: 4, src: "/images/gallery/cut-4.jpg", alt: "Corte moderno", category: "Moderno" },
-  { id: 5, src: "/images/gallery/cut-5.jpg", alt: "Degradê alto", category: "Degradê" },
-  { id: 6, src: "/images/gallery/cut-6.jpg", alt: "Corte clássico", category: "Clássico" },
-  { id: 7, src: "/images/gallery/cut-7.jpg", alt: "Barba completa", category: "Barba" },
-  { id: 8, src: "/images/gallery/cut-8.jpg", alt: "Corte navalhado", category: "Navalhado" },
-  { id: 9, src: "/images/gallery/cut-9.jpg", alt: "Degradê médio", category: "Degradê" },
-  { id: 10, src: "/images/gallery/cut-10.jpg", alt: "Corte texturizado", category: "Moderno" },
-  { id: 11, src: "/images/gallery/cut-11.jpg", alt: "Barba estilizada", category: "Barba" },
-  { id: 12, src: "/images/gallery/cut-12.jpg", alt: "Corte undercut", category: "Moderno" },
+  { id: 1, src: "/images/gallery/Captura de tela 2026-04-13 084839.png", alt: "Corte 1", category: "Cortes" },
+  { id: 2, src: "/images/gallery/Captura de tela 2026-04-13 084856.png", alt: "Corte 2", category: "Cortes" },
+  { id: 3, src: "/images/gallery/Captura de tela 2026-04-13 084906.png", alt: "Corte 3", category: "Cortes" },
+  { id: 4, src: "/images/gallery/Captura de tela 2026-04-13 084915.png", alt: "Corte 4", category: "Cortes" },
+  { id: 5, src: "/images/gallery/Captura de tela 2026-04-13 084925.png", alt: "Corte 5", category: "Cortes" },
+  { id: 6, src: "/images/gallery/Captura de tela 2026-04-13 084933.png", alt: "Corte 6", category: "Cortes" },
+  { id: 7, src: "/images/gallery/Captura de tela 2026-04-13 084954.png", alt: "Corte 7", category: "Cortes" },
+  { id: 8, src: "/images/gallery/Captura de tela 2026-04-13 085007.png", alt: "Corte 8", category: "Cortes" },
 ]
 
 export function Gallery() {
@@ -70,6 +66,12 @@ export function Gallery() {
               className="group relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-muted"
               onClick={() => openLightbox(index)}
             >
+              <img
+                src={encodeURI(image.src)}
+                alt={image.alt}
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
               {/* Fallback placeholder */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center -z-10">
                 <span className="text-5xl font-serif text-primary/30">{image.id}</span>
@@ -113,6 +115,13 @@ export function Gallery() {
               className="relative max-w-4xl max-h-[80vh] w-full aspect-square bg-muted rounded-lg overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
+              {filteredImages[currentImageIndex] && (
+                <img
+                  src={encodeURI(filteredImages[currentImageIndex].src)}
+                  alt={filteredImages[currentImageIndex].alt}
+                  className="absolute inset-0 h-full w-full object-contain"
+                />
+              )}
               {/* Fallback placeholder */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary flex flex-col items-center justify-center -z-10">
                 <span className="text-9xl font-serif text-primary/30">
