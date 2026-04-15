@@ -53,8 +53,7 @@ export function Hero() {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Onde a arte do corte encontra a excelência. Experiência única em barbearia masculina
-            com atendimento personalizado e técnicas exclusivas.
+            Onde a arte do corte encontra a excelência
           </p>
 
           {/* CTA Buttons */}

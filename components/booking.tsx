@@ -188,7 +188,7 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="mx-auto max-w-3xl rounded-xl border border-zinc-800/60 bg-card/60 backdrop-blur-sm overflow-hidden max-h-96 overflow-y-auto">
+                <div className="mx-auto max-w-3xl rounded-xl border border-zinc-800/60 bg-card/60 backdrop-blur-sm">
                   <div className="divide-y divide-zinc-800/60">
                     {services.map((service) => {
                       const isSelected = selectedServices.some((s) => s.id === service.id)
