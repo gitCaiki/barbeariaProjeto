@@ -10,7 +10,19 @@ next.user-config.*
 # Environment variables
 .env*.local
 
+# More env files
+.env
+.env.*
+
 # Common ignores
 node_modules
 .next/
 .DS_Store
+
+# Builds
+out/
+dist/
+
+# Logs
+*.log
+pnpm-debug.log*
