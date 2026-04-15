@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion, AnimatePresence, type Variants } from "framer-motion"
 import { Calendar, Clock, User, Phone, Check, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,6 +27,12 @@ export interface Appointment {
   createdAt: Date
 }
 
+const stepVariants: Variants = {
+  hidden: { opacity: 0, x: 40 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+  exit: { opacity: 0, x: -40, transition: { duration: 0.25, ease: [0.7, 0, 0.84, 0] } },
+}
+
 const timeSlots = [
   "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
   "12:00", "12:30", "14:00", "14:30", "15:00", "15:30",
@@ -41,6 +48,21 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
   const [clientPhone, setClientPhone] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  const handlePickService = (service: Service) => {
+    const isSelected = selectedServices.some((s) => s.id === service.id)
+    if (isSelected) return
+
+    selectedServices
+      .filter((s) => s.id !== service.id)
+      .forEach((s) => onToggleService(s))
+    onToggleService(service)
+  }
+
+  const handlePickServiceAndContinue = (service: Service) => {
+    handlePickService(service)
+    setStep(2)
+  }
 
   const totalPrice = selectedServices.reduce((sum, service) => {
     const price = parseFloat(service.price.replace("R$ ", "").replace(",", ".")) || 0
@@ -177,10 +199,18 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
           ))}
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Step 1: Select Services */}
-          {step === 1 && (
-            <Card className="bg-card border-border">
+        <div className="max-w-4xl mx-auto overflow-hidden px-1">
+          <AnimatePresence mode="wait">
+            {/* Step 1: Select Services */}
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                variants={stepVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+              <Card className="bg-card border-border shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-foreground">
                   <Scissors className="w-5 h-5 text-primary" />
@@ -208,7 +238,7 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                             "hover:bg-zinc-900/30",
                             isSelected && "bg-primary/10"
                           )}
-                          onClick={() => onToggleService(service)}
+                          onClick={() => handlePickService(service)}
                           role="button"
                           tabIndex={0}
                         >
@@ -244,56 +274,38 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                           </div>
 
                           <div className="flex items-center justify-end">
-                            <button
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
                               type="button"
-                              className={cn(
-                                "px-4 py-2 rounded-md text-sm font-medium text-white",
-                                isSelected
-                                  ? "bg-blue-600 hover:bg-blue-500"
-                                  : "bg-blue-600 hover:bg-blue-500"
-                              )}
+                              className="px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 transition-all font-serif"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                onToggleService(service)
+                                handlePickServiceAndContinue(service)
                               }}
                             >
-                              {isSelected ? "Remover" : "Agendar"}
-                            </button>
+                              Agendar
+                            </motion.button>
                           </div>
                         </div>
                       )
                     })}
                   </div>
                 </div>
-
-                {selectedServices.length > 0 && (
-                  <div className="mt-6 pt-6 border-t border-border">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-muted-foreground">
-                        {selectedServices.length} serviço(s) selecionado(s)
-                      </span>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-primary">
-                          R$ {totalPrice.toFixed(2).replace(".", ",")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">~{totalDuration} min</p>
-                      </div>
-                    </div>
-                    <Button
-                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                      onClick={() => setStep(2)}
-                    >
-                      Continuar
-                    </Button>
-                  </div>
-                )}
               </CardContent>
-            </Card>
-          )}
+              </Card>
+              </motion.div>
+            )}
 
-          {/* Step 2: Select Date & Time */}
-          {step === 2 && (
-            <Card className="bg-card border-border">
+            {/* Step 2: Select Date & Time */}
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                variants={stepVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+              <Card className="bg-card border-border shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-foreground">
                   <Calendar className="w-5 h-5 text-primary" />
@@ -301,6 +313,23 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Context: Selected Services */}
+                <div className="mb-8 p-4 bg-primary/5 rounded-xl border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h4 className="font-medium text-foreground text-sm flex items-center gap-2">
+                      <Scissors className="w-4 h-4 text-primary" />
+                      Serviço selecionado
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1 font-medium">
+                      {selectedServices.map(s => s.name).join(", ")}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <p className="font-bold text-primary text-lg">R$ {totalPrice.toFixed(2).replace(".", ",")}</p>
+                    <p className="text-xs text-muted-foreground">{totalDuration} min</p>
+                  </div>
+                </div>
+
                 {/* Date Selection */}
                 <div className="mb-8">
                   <Label className="text-foreground mb-3 block">Data</Label>
@@ -345,13 +374,13 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     variant="outline"
                     className="flex-1 border-border text-foreground"
                     onClick={() => setStep(1)}
                   >
-                    Voltar
+                    Voltar (Serviços)
                   </Button>
                   <Button
                     className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -362,12 +391,20 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                   </Button>
                 </div>
               </CardContent>
-            </Card>
-          )}
+              </Card>
+              </motion.div>
+            )}
 
-          {/* Step 3: Client Info */}
-          {step === 3 && (
-            <Card className="bg-card border-border">
+            {/* Step 3: Client Info */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                variants={stepVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+              <Card className="bg-card border-border shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-foreground">
                   <User className="w-5 h-5 text-primary" />
@@ -376,6 +413,23 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-border text-foreground"
+                      onClick={() => setStep(2)}
+                    >
+                      Voltar (Data/Horário)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-border text-foreground"
+                      onClick={() => setStep(1)}
+                    >
+                      Serviços
+                    </Button>
+                  </div>
+
                   <div>
                     <Label htmlFor="name" className="text-foreground">Nome Completo</Label>
                     <div className="relative mt-2">
@@ -453,8 +507,10 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          )}
+              </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </section>
