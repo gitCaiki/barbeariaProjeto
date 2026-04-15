@@ -21,7 +21,7 @@ export function Hero() {
   return (
     <section
       id="inicio"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-[100svh] flex items-center justify-center overflow-hidden pt-24 pb-20"
     >
       {/* Background Image */}
       <div className="absolute inset-0 bg-background">
@@ -42,7 +42,7 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="max-w-4xl mx-auto mt-40 lg:mt-65">
+        <div className="max-w-4xl mx-auto mt-12 sm:mt-16 md:mt-24 lg:mt-32">
           {/* Badge */}
 
           {/* Main Title */}
@@ -80,7 +80,7 @@ export function Hero() {
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-16 pt-8 border-t border-border/50">
+          <div className="grid grid-cols-2 md:flex md:flex-wrap items-center justify-center gap-6 md:gap-16 mt-10 sm:mt-12 pt-6 sm:pt-8 border-t border-border/50">
             <div className="text-center">
               <p className="text-3xl md:text-4xl font-serif font-bold text-primary">10+</p>
               <p className="text-sm text-muted-foreground mt-1">Anos de Experiência</p>
@@ -89,7 +89,7 @@ export function Hero() {
               <p className="text-3xl md:text-4xl font-serif font-bold text-primary">2000+</p>
               <p className="text-sm text-muted-foreground mt-1">Clientes Satisfeitos</p>
             </div>
-            <div className="text-center">
+            <div className="text-center col-span-2 md:col-span-1">
               <p className="text-3xl md:text-4xl font-serif font-bold text-primary">21</p>
               <p className="text-sm text-muted-foreground mt-1">Serviços Disponíveis</p>
             </div>
@@ -98,7 +98,7 @@ export function Hero() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
         <Link
           href="#agendar"
           className="text-muted-foreground hover:text-primary transition-colors"
@@ -107,7 +107,7 @@ export function Hero() {
             document.getElementById("agendar")?.scrollIntoView({ behavior: "smooth" })
           }}
         >
-          <ChevronDown className="w-8 h-8" />
+          <ChevronDown className="w-7 h-7 sm:w-8 sm:h-8" />
         </Link>
       </div>
     </section>
