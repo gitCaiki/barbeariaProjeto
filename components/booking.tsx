@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { motion, AnimatePresence, type Variants } from "framer-motion"
 import { Calendar, Clock, User, Phone, Check, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,23 @@ export interface Appointment {
   createdAt: Date
 }
 
+type CreateAppointmentApiResponse = {
+  ok?: boolean
+  error?: string
+  agendamento?: {
+    id: string
+    startDateTime: string
+    status: string
+  }
+}
+
+type ExistingAppointmentApi = {
+  id: string
+  startDateTime: string
+  endDateTime: string
+  status: "agendado" | "em_andamento" | "finalizado" | "cancelado"
+}
+
 const stepVariants: Variants = {
   hidden: { opacity: 0, x: 40 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
@@ -48,6 +65,15 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
   const [clientPhone, setClientPhone] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
+  const [existingAppointments, setExistingAppointments] = useState<ExistingAppointmentApi[]>([])
+
+  const setStepAndKeepView = (nextStep: number) => {
+    setStep(nextStep)
+    requestAnimationFrame(() => {
+      document.getElementById("agendar")?.scrollIntoView({ behavior: "auto", block: "start" })
+    })
+  }
 
   const handlePickService = (service: Service) => {
     const isSelected = selectedServices.some((s) => s.id === service.id)
@@ -61,7 +87,7 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
 
   const handlePickServiceAndContinue = (service: Service) => {
     handlePickService(service)
-    setStep(2)
+    setStepAndKeepView(2)
   }
 
   const totalPrice = selectedServices.reduce((sum, service) => {
@@ -74,50 +100,154 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
     return sum + (match ? parseInt(match[1]) : 0)
   }, 0)
 
+  const selectedServiceDuration = useMemo(() => {
+    const service = selectedServices[0]
+    if (!service) return 0
+    const durationParts = service.duration.match(/\d+/g)?.map(Number) ?? []
+    return durationParts.length >= 2 ? durationParts[0] * 60 + durationParts[1] : (durationParts[0] ?? 0)
+  }, [selectedServices])
+
+  const availableTimeSlots = useMemo(() => {
+    if (!selectedDate || !selectedServiceDuration) return timeSlots
+
+    const activeAppointments = existingAppointments.filter((appointment) => appointment.status !== "cancelado")
+
+    return timeSlots.filter((time) => {
+      const slotStart = new Date(`${selectedDate}T${time}:00`)
+      const slotEnd = new Date(slotStart.getTime() + selectedServiceDuration * 60 * 1000)
+
+      const hasConflict = activeAppointments.some((appointment) => {
+        const existingStart = new Date(appointment.startDateTime)
+        const existingEnd = new Date(appointment.endDateTime)
+        return existingStart < slotEnd && existingEnd > slotStart
+      })
+
+      return !hasConflict
+    })
+  }, [existingAppointments, selectedDate, selectedServiceDuration])
+
+  useEffect(() => {
+    if (step !== 2 || !selectedDate) {
+      setExistingAppointments([])
+      return
+    }
+
+    fetch("/api/agendamentos")
+      .then(async (res) => {
+        const data = (await res.json().catch(() => null)) as null | {
+          ok?: boolean
+          agendamentos?: ExistingAppointmentApi[]
+          error?: string
+        }
+        if (!res.ok || !data?.ok) {
+          throw new Error(data?.error || "Falha ao carregar horários")
+        }
+
+        setExistingAppointments(data.agendamentos ?? [])
+      })
+      .catch(() => {
+        setExistingAppointments([])
+      })
+  }, [selectedDate, step])
+
+  useEffect(() => {
+    if (!selectedTime) return
+    if (!availableTimeSlots.includes(selectedTime)) {
+      setSelectedTime("")
+    }
+  }, [availableTimeSlots, selectedTime])
+
   const handleSubmit = () => {
+    setBookingError(null)
+
     if (!selectedServices.length || !selectedDate || !selectedTime || !clientName || !clientPhone) {
       return
     }
 
+    const selectedService = selectedServices[0]
+    if (!selectedService) return
+
+    const durationParts = selectedService.duration.match(/\d+/g)?.map(Number) ?? []
+    const durationInMinutes =
+      durationParts.length >= 2 ? durationParts[0] * 60 + durationParts[1] : (durationParts[0] ?? 0)
+    if (!durationInMinutes) return
+
     setIsSubmitting(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      const appointment: Appointment = {
-        id: `APT-${Date.now()}`,
-        services: selectedServices,
-        date: selectedDate,
-        time: selectedTime,
-        clientName,
-        clientPhone,
-        status: "confirmado",
-        createdAt: new Date()
-      }
+    const startDateTime = new Date(`${selectedDate}T${selectedTime}:00`)
 
-      onAddAppointment(appointment)
-      setShowSuccess(true)
-      setIsSubmitting(false)
+    fetch("/api/agendamentos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clienteNome: clientName,
+        clienteTelefone: clientPhone,
+        servicoNome: selectedService.name,
+        duracao: durationInMinutes,
+        startDateTime: startDateTime.toISOString(),
+      }),
+    })
+      .then(async (res) => {
+        const data = (await res.json().catch(() => null)) as CreateAppointmentApiResponse | null
+        if (!res.ok || !data?.ok || !data.agendamento) {
+          throw new Error(data?.error ?? "Não foi possível salvar o agendamento.")
+        }
 
-      // Reset form after success
-      setTimeout(() => {
-        setShowSuccess(false)
-        setStep(1)
-        setSelectedDate("")
-        setSelectedTime("")
-        setClientName("")
-        setClientPhone("")
-        selectedServices.forEach(s => onToggleService(s))
-      }, 3000)
-    }, 1500)
+        const start = new Date(data.agendamento.startDateTime)
+        const yyyy = start.getFullYear()
+        const mm = String(start.getMonth() + 1).padStart(2, "0")
+        const dd = String(start.getDate()).padStart(2, "0")
+        const hh = String(start.getHours()).padStart(2, "0")
+        const min = String(start.getMinutes()).padStart(2, "0")
+
+        const appointment: Appointment = {
+          id: data.agendamento.id,
+          services: selectedServices,
+          date: `${yyyy}-${mm}-${dd}`,
+          time: `${hh}:${min}`,
+          clientName,
+          clientPhone,
+          status: "confirmado",
+          createdAt: new Date(),
+        }
+
+        onAddAppointment(appointment)
+        setShowSuccess(true)
+
+        setTimeout(() => {
+          setShowSuccess(false)
+          setStep(1)
+          setSelectedDate("")
+          setSelectedTime("")
+          setClientName("")
+          setClientPhone("")
+          selectedServices.forEach((s) => onToggleService(s))
+        }, 3000)
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "Falha no agendamento."
+        setBookingError(message)
+      })
+      .finally(() => {
+        setIsSubmitting(false)
+      })
   }
 
   // Generate next 14 days for date selection
   const generateDates = () => {
     const dates = []
     const today = new Date()
-    for (let i = 0; i < 14; i++) {
+    let offset = 0
+    while (dates.length < 14) {
       const date = new Date(today)
-      date.setDate(today.getDate() + i)
+      date.setDate(today.getDate() + offset)
+      offset += 1
+
+      // Domingo fechado
+      if (date.getDay() === 0) {
+        continue
+      }
+
       dates.push({
         value: date.toISOString().split('T')[0],
         day: date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
@@ -357,7 +487,7 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                 <div className="mb-8">
                   <Label className="text-foreground mb-3 block">Horário</Label>
                   <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-2">
-                    {timeSlots.map((time) => (
+                    {availableTimeSlots.map((time) => (
                       <button
                         key={time}
                         onClick={() => setSelectedTime(time)}
@@ -372,19 +502,28 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                       </button>
                     ))}
                   </div>
+                  {availableTimeSlots.length === 0 && (
+                    <p className="text-sm text-muted-foreground mt-3">
+                      Não há horários disponíveis para esta data.
+                    </p>
+                  )}
                 </div>
+
+                {bookingError && (
+                  <p className="text-sm text-red-400 mb-4">{bookingError}</p>
+                )}
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     variant="outline"
                     className="flex-1 border-border text-foreground"
-                    onClick={() => setStep(1)}
+                    onClick={() => setStepAndKeepView(1)}
                   >
                     Voltar (Serviços)
                   </Button>
                   <Button
                     className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                    onClick={() => setStep(3)}
+                    onClick={() => setStepAndKeepView(3)}
                     disabled={!selectedDate || !selectedTime}
                   >
                     Continuar
@@ -417,14 +556,14 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                     <Button
                       variant="outline"
                       className="flex-1 border-border text-foreground"
-                      onClick={() => setStep(2)}
+                      onClick={() => setStepAndKeepView(2)}
                     >
                       Voltar (Data/Horário)
                     </Button>
                     <Button
                       variant="outline"
                       className="flex-1 border-border text-foreground"
-                      onClick={() => setStep(1)}
+                      onClick={() => setStepAndKeepView(1)}
                     >
                       Serviços
                     </Button>
@@ -493,7 +632,7 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                     <Button
                       variant="outline"
                       className="flex-1 border-border text-foreground"
-                      onClick={() => setStep(2)}
+                      onClick={() => setStepAndKeepView(2)}
                     >
                       Voltar
                     </Button>

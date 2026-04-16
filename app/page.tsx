@@ -27,12 +27,28 @@ export default function Home() {
     setAppointments((prev) => [...prev, appointment])
   }
 
-  const handleCancelAppointment = (id: string) => {
-    setAppointments((prev) =>
-      prev.map((apt) =>
-        apt.id === id ? { ...apt, status: "cancelado" as const } : apt
+  const handleCancelAppointment = async (id: string) => {
+    try {
+      const res = await fetch(`/api/agendamentos/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelado" }),
+      })
+
+      const data = (await res.json().catch(() => null)) as null | { ok?: boolean; error?: string }
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || "Falha ao cancelar agendamento")
+      }
+
+      setAppointments((prev) =>
+        prev.map((apt) =>
+          apt.id === id ? { ...apt, status: "cancelado" as const } : apt
+        )
       )
-    )
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Falha ao cancelar agendamento"
+      window.alert(message)
+    }
   }
 
   return (
