@@ -14,6 +14,7 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+RUN pnpm exec prisma generate
 RUN pnpm build
 
 FROM base AS runner
@@ -21,7 +22,7 @@ FROM base AS runner
 ENV NODE_ENV=production
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --no-frozen-lockfile
+COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
