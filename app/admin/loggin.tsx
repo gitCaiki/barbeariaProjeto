@@ -100,11 +100,6 @@ export function Loggin() {
           </button>
 
           <div className="text-xs text-muted-foreground">
-            <p>
-              Configure as variáveis:
-              <span className="font-mono"> ADMIN_USERNAME</span> e
-              <span className="font-mono"> ADMIN_PASSWORD</span>
-            </p>
             <p className="mt-2">
               <Link href="/" className="hover:text-primary transition-colors">
                 Voltar para o site

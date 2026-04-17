@@ -27,7 +27,7 @@ type AppointmentAdmin = {
   data: string
 }
 
-type FilterKey = "todos" | "hoje" | "finalizados" | "cancelados"
+type FilterKey = "todos" | "hoje" | "finalizados" | "cancelados" | "historico"
 type ApiAppointmentStatus = "agendado" | "em_andamento" | "finalizado" | "cancelado"
 type ApiAppointment = {
   id: string
@@ -167,7 +167,9 @@ export default function AdminPage() {
         ? byDate.filter((a) => a.status === "finalizado")
         : filter === "cancelados"
           ? byDate.filter((a) => a.status === "cancelado")
-          : byDate
+          : filter === "historico"
+            ? byDate.filter((a) => a.status === "finalizado" || a.status === "cancelado")
+            : byDate
 
     const byCalendarDate = selectedCalendarIso ? byStatus.filter((a) => a.data === selectedCalendarIso) : byStatus
 

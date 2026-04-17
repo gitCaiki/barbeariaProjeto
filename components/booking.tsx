@@ -241,6 +241,14 @@ export function Booking({
         onAddAppointment(appointment)
         setShowSuccess(true)
 
+        // Mostra o sucesso primeiro e depois guia o usuário suavemente para "Meus Agendamentos".
+        setTimeout(() => {
+          document.getElementById("meus-agendamentos")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          })
+        }, 1200)
+
         setTimeout(() => {
           setShowSuccess(false)
           setStep(1)

@@ -123,10 +123,14 @@ export default function Home() {
 
   const handleCancelAppointment = async (id: string) => {
     try {
+      const targetAppointment = appointments.find((appointment) => appointment.id === id)
+      const phoneForCancel = normalizePhone(targetAppointment?.clientPhone || persistedPhone)
+      if (!phoneForCancel) return
+
       const res = await fetch(`/api/agendamentos/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelado" }),
+        body: JSON.stringify({ status: "cancelado", clienteTelefone: phoneForCancel }),
       })
 
       const data = (await res.json().catch(() => null)) as null | { ok?: boolean; error?: string }
@@ -140,8 +144,8 @@ export default function Home() {
         )
       )
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Falha ao cancelar agendamento"
-      window.alert(message)
+      // Evita alert nativo na tela e sincroniza novamente os dados.
+      void loadAppointmentsByPhone(persistedPhone)
     }
   }
 

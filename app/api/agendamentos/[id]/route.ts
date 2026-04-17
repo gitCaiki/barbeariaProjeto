@@ -26,21 +26,24 @@ export async function PATCH(
     return NextResponse.json({ ok: false, error: "Não autenticado" }, { status: 401 })
   }
 
-  const updated = await prisma.appointment.updateMany(
-    userId
-      ? {
-          where: { id, userId },
-          data: { status: requestedStatus },
-        }
-      : {
-          where: { id },
-          data: { status: "cancelado" },
-        }
-  )
-
-  if (updated.count === 0) {
+  const appointment = await prisma.appointment.findUnique({ where: { id } })
+  if (!appointment) {
     return NextResponse.json({ ok: false, error: "Agendamento não encontrado" }, { status: 404 })
   }
+
+  // Cancelamento é permitido por id para evitar bloqueio em contexto misto cliente/admin.
+  if (requestedStatus !== "cancelado" && userId) {
+    if (appointment.userId && appointment.userId !== userId) {
+      return NextResponse.json({ ok: false, error: "Agendamento não encontrado" }, { status: 404 })
+    }
+  } else if (requestedStatus !== "cancelado" && !userId) {
+    return NextResponse.json({ ok: false, error: "Não autenticado" }, { status: 401 })
+  }
+
+  await prisma.appointment.update({
+    where: { id },
+    data: { status: requestedStatus },
+  })
 
   return NextResponse.json({ ok: true })
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Calendar, Clock, Scissors, AlertCircle, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -36,20 +37,21 @@ const statusConfig = {
 }
 
 export function MyAppointments({ appointments, onCancelAppointment }: MyAppointmentsProps) {
+  const [showHistory, setShowHistory] = useState(false)
+
   const sortedAppointments = [...appointments].sort((a, b) => {
     const dateA = new Date(`${a.date}T${a.time}`)
     const dateB = new Date(`${b.date}T${b.time}`)
     return dateB.getTime() - dateA.getTime()
   })
 
-  const upcomingAppointments = sortedAppointments.filter(apt => {
+  const activeAppointments = sortedAppointments.filter(apt => {
     const aptDate = new Date(`${apt.date}T${apt.time}`)
-    return aptDate > new Date() && apt.status !== "cancelado"
+    return aptDate > new Date() && apt.status !== "cancelado" && apt.status !== "concluído"
   })
 
   const pastAppointments = sortedAppointments.filter(apt => {
-    const aptDate = new Date(`${apt.date}T${apt.time}`)
-    return aptDate <= new Date() || apt.status === "cancelado"
+    return apt.status === "cancelado" || apt.status === "concluído"
   })
 
   const formatDate = (dateStr: string) => {
@@ -187,32 +189,45 @@ export function MyAppointments({ appointments, onCancelAppointment }: MyAppointm
             </Card>
           ) : (
             <div className="space-y-8">
-              {/* Upcoming Appointments */}
-              {upcomingAppointments.length > 0 && (
+              {/* Active Appointments */}
+              {activeAppointments.length > 0 ? (
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    Próximos Agendamentos
+                    Agendamentos Marcados
                   </h3>
                   <div className="space-y-4">
-                    {upcomingAppointments.map((appointment) => (
+                    {activeAppointments.map((appointment) => (
                       <AppointmentCard key={appointment.id} appointment={appointment} />
                     ))}
                   </div>
                 </div>
+              ) : (
+                <Card className="bg-card border-border">
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    Nenhum agendamento marcado no momento.
+                  </CardContent>
+                </Card>
               )}
 
               {/* Past Appointments */}
               {pastAppointments.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-                    Histórico
-                  </h3>
-                  <div className="space-y-4">
-                    {pastAppointments.map((appointment) => (
-                      <AppointmentCard key={appointment.id} appointment={appointment} isPast />
-                    ))}
-                  </div>
+                  <button
+                    type="button"
+                    className="text-lg font-semibold text-muted-foreground mb-4 hover:text-foreground transition-colors"
+                    onClick={() => setShowHistory((prev) => !prev)}
+                  >
+                    Histórico de agendamentos {showHistory ? "▲" : "▼"}
+                  </button>
+
+                  {showHistory && (
+                    <div className="space-y-4">
+                      {pastAppointments.map((appointment) => (
+                        <AppointmentCard key={appointment.id} appointment={appointment} isPast />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
