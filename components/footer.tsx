@@ -156,7 +156,15 @@ export function Footer() {
               © {currentYear} Studio Feel by Ferreira. Todos os direitos reservados.
             </p>
             <p className="text-sm text-muted-foreground text-center md:text-right">
-              Desenvolvido por <span className="text-primary font-medium">Caiki Lemos</span>
+              Desenvolvido por{" "}
+              <a
+                href="https://wa.me/5567992680222"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-medium hover:underline"
+              >
+                Caiki Lemos
+              </a>
             </p>
           </div>
         </div>

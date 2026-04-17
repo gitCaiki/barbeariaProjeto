@@ -371,9 +371,6 @@ export default function AdminPage() {
         <div className="mt-8 rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Agendamentos</p>
-            <p className="text-xs text-muted-foreground">
-              Próximo: <span className="text-foreground">{nextId ?? "-"}</span>
-            </p>
           </div>
 
           {apiError && (

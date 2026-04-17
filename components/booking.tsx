@@ -398,7 +398,7 @@ export function Booking({
                         <div
                           key={service.id}
                           className={cn(
-                            "group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 py-4 transition-colors",
+                            "group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-3 sm:px-4 py-4 transition-colors min-w-0",
                             "hover:bg-zinc-900/30",
                             isSelected && "bg-primary/10"
                           )}
@@ -406,7 +406,7 @@ export function Booking({
                           role="button"
                           tabIndex={0}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <div
                               className={cn(
                                 "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
@@ -422,26 +422,28 @@ export function Booking({
                               )}
                             </div>
 
-                            <div className="min-w-0">
-                              <p className="text-foreground font-medium truncate">{service.name}</p>
-                              <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-400">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-foreground font-medium leading-tight break-words line-clamp-2">
+                                {service.name}
+                              </p>
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-400 mt-1">
                                 <span className="text-green-500 font-semibold whitespace-nowrap">
                                   {service.price}
                                 </span>
                                 <span className="text-zinc-600">•</span>
-                                <span className="flex items-center gap-1 whitespace-nowrap">
+                                <span className="flex items-center gap-1 whitespace-nowrap min-w-0">
                                   <Clock className="w-4 h-4" />
-                                  {service.duration}
+                                  <span className="truncate">{service.duration}</span>
                                 </span>
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-end">
+                          <div className="flex items-center justify-end w-full sm:w-auto">
                             <motion.button
                               whileTap={{ scale: 0.95 }}
                               type="button"
-                              className="px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 transition-all font-serif"
+                              className="px-4 sm:px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 shadow-md shadow-primary/20 transition-all font-serif w-full sm:w-auto"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handlePickServiceAndContinue(service)
