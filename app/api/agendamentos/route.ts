@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { ensureDefaultUser, getLoggedInUserId } from "@/lib/auth"
+import { normalizePhone } from "@/lib/phone"
 import { prisma } from "@/lib/prisma"
 
 const createAppointmentSchema = z.object({
@@ -45,6 +46,11 @@ export async function POST(req: Request) {
   }
 
   const payload = parsed.data
+  const telefoneNormalizado = normalizePhone(payload.clienteTelefone)
+  if (!telefoneNormalizado) {
+    return NextResponse.json({ ok: false, error: "Telefone inválido" }, { status: 400 })
+  }
+
   const startDateTime = new Date(payload.startDateTime)
   const endDateTime = new Date(startDateTime.getTime() + payload.duracao * 60 * 1000)
 
@@ -76,7 +82,7 @@ export async function POST(req: Request) {
   const appointment = await prisma.appointment.create({
     data: {
       clienteNome: payload.clienteNome,
-      clienteTelefone: payload.clienteTelefone,
+      clienteTelefone: telefoneNormalizado,
       servicoNome: payload.servicoNome,
       duracao: payload.duracao,
       startDateTime,
@@ -89,7 +95,41 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, agendamento: mapAppointment(appointment) }, { status: 201 })
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const url = new URL(req.url)
+  const telefoneQuery = url.searchParams.get("telefone")
+  const telefoneNormalizado = telefoneQuery ? normalizePhone(telefoneQuery) : ""
+
+  if (telefoneQuery) {
+    if (!telefoneNormalizado) {
+      return NextResponse.json({ ok: false, error: "Telefone inválido" }, { status: 400 })
+    }
+
+    await prisma.appointment.updateMany({
+      where: {
+        clienteTelefone: telefoneNormalizado,
+        status: "agendado",
+        endDateTime: { lt: new Date() },
+      },
+      data: { status: "finalizado" },
+    })
+
+    const agendamentosPorTelefone = await prisma.appointment.findMany({
+      where: { clienteTelefone: telefoneNormalizado },
+      orderBy: { startDateTime: "asc" },
+    })
+
+    return NextResponse.json({
+      ok: true,
+      agendamentos: agendamentosPorTelefone.map((item) =>
+        mapAppointment({
+          ...item,
+          endDateTime: item.endDateTime ?? new Date(item.startDateTime.getTime() + item.duracao * 60 * 1000),
+        })
+      ),
+    })
+  }
+
   const loggedUserId = await getLoggedInUserId()
   const defaultUser = await ensureDefaultUser()
   const userId = loggedUserId ?? defaultUser?.id

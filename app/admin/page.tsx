@@ -243,10 +243,10 @@ export default function AdminPage() {
         <div className="mt-8 flex flex-wrap gap-2">
           {(
             [
-              { key: "todos", label: "Todos" },
               { key: "hoje", label: "Hoje" },
               { key: "finalizados", label: "Finalizados" },
               { key: "cancelados", label: "Cancelados" },
+              { key: "todos", label: "Todos" },
             ] as const
           ).map((item) => (
             <button

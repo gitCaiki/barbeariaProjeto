@@ -8,12 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { services, type Service } from "@/components/services"
+import { normalizePhone } from "@/lib/phone"
 import { cn } from "@/lib/utils"
 
 interface BookingProps {
   selectedServices: Service[]
   onToggleService: (service: Service) => void
   onAddAppointment: (appointment: Appointment) => void
+  initialClientPhone?: string
+  onClientPhoneChange?: (phone: string) => void
 }
 
 export interface Appointment {
@@ -57,7 +60,13 @@ const timeSlots = [
   "19:00", "19:30", "20:00"
 ]
 
-export function Booking({ selectedServices, onToggleService, onAddAppointment }: BookingProps) {
+export function Booking({
+  selectedServices,
+  onToggleService,
+  onAddAppointment,
+  initialClientPhone = "",
+  onClientPhoneChange,
+}: BookingProps) {
   const [step, setStep] = useState(1)
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedTime, setSelectedTime] = useState("")
@@ -74,6 +83,11 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
       document.getElementById("agendar")?.scrollIntoView({ behavior: "auto", block: "start" })
     })
   }
+
+  useEffect(() => {
+    if (!initialClientPhone) return
+    setClientPhone((prev) => (prev ? prev : initialClientPhone))
+  }, [initialClientPhone])
 
   const handlePickService = (service: Service) => {
     const isSelected = selectedServices.some((s) => s.id === service.id)
@@ -110,11 +124,22 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
   const availableTimeSlots = useMemo(() => {
     if (!selectedDate || !selectedServiceDuration) return timeSlots
 
+    const now = new Date()
+    const todayLocal = new Date()
+    const todayIso = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(
+      todayLocal.getDate()
+    ).padStart(2, "0")}`
+
     const activeAppointments = existingAppointments.filter((appointment) => appointment.status !== "cancelado")
 
     return timeSlots.filter((time) => {
       const slotStart = new Date(`${selectedDate}T${time}:00`)
       const slotEnd = new Date(slotStart.getTime() + selectedServiceDuration * 60 * 1000)
+
+      // Oculta horários que já passaram hoje (usando horário local)
+      if (selectedDate === todayIso && slotEnd <= now) {
+        return false
+      }
 
       const hasConflict = activeAppointments.some((appointment) => {
         const existingStart = new Date(appointment.startDateTime)
@@ -164,6 +189,8 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
       return
     }
 
+    onClientPhoneChange?.(clientPhone)
+
     const selectedService = selectedServices[0]
     if (!selectedService) return
 
@@ -206,7 +233,7 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
           date: `${yyyy}-${mm}-${dd}`,
           time: `${hh}:${min}`,
           clientName,
-          clientPhone,
+          clientPhone: normalizePhone(clientPhone),
           status: "confirmado",
           createdAt: new Date(),
         }
@@ -220,7 +247,6 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
           setSelectedDate("")
           setSelectedTime("")
           setClientName("")
-          setClientPhone("")
           selectedServices.forEach((s) => onToggleService(s))
         }, 3000)
       })
@@ -591,7 +617,11 @@ export function Booking({ selectedServices, onToggleService, onAddAppointment }:
                         id="phone"
                         placeholder="(00) 00000-0000"
                         value={clientPhone}
-                        onChange={(e) => setClientPhone(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setClientPhone(value)
+                          onClientPhoneChange?.(value)
+                        }}
                         className="pl-10 bg-input border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
