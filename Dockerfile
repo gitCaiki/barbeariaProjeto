@@ -1,13 +1,16 @@
 FROM node:22-alpine AS base
 
-RUN corepack enable && pnpm config set ignore-build-scripts false
+RUN corepack enable
 
 WORKDIR /app
+
+# Configurar pnpm para permitir scripts de build
+RUN echo "ignore-build-scripts=false" > .npmrc
 
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --no-frozen-lockfile && pnpm rebuild
 
 FROM base AS builder
 
