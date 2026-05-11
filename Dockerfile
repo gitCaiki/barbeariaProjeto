@@ -1,30 +1,25 @@
 FROM node:22-alpine AS base
 
-RUN corepack enable
-
 WORKDIR /app
-
-# Configurar pnpm para permitir scripts de build
-RUN echo "ignore-build-scripts=false" > .npmrc
 
 FROM base AS deps
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile && pnpm rebuild
+COPY package.json package-lock.json* ./
+RUN npm ci
 
 FROM base AS builder
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN pnpm exec prisma generate
-RUN pnpm build
+RUN npx prisma generate
+RUN npm run build
 
 FROM base AS runner
 
 ENV NODE_ENV=production
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 
 COPY --from=builder /app/.next ./.next
@@ -33,4 +28,4 @@ COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
