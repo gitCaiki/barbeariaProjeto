@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface GalleryImage {
   id: number
@@ -46,90 +47,142 @@ export function Gallery() {
   }
 
   return (
-    <section id="galeria" className="py-24 bg-background">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-6">
+    <section id="galeria" className="py-24 md:py-32 bg-background relative">
+      {/* Elemento decorativo */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header - Minimalista */}
+        <div className="text-center mb-16">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-xs uppercase tracking-[0.3em] text-primary mb-4"
+          >
+            Portfólio
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl font-serif font-light text-foreground mb-6 tracking-wide"
+          >
             Nossa <span className="text-primary italic">Galeria</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          </motion.h2>
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="w-16 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-6"
+          />
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="text-muted-foreground max-w-xl mx-auto font-light"
+          >
             Confira alguns dos nossos trabalhos e inspire-se para o seu próximo visual.
-          </p>
+          </motion.p>
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {/* Gallery Grid - Estilo refinado */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {filteredImages.map((image, index) => (
-            <div
+            <motion.div
               key={image.id}
-              className="group relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-muted"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05, duration: 0.4 }}
+              className="group relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-secondary/30 border border-border/30 hover:border-primary/30 transition-all duration-300"
               onClick={() => openLightbox(index)}
             >
               <img
                 src={encodeURI(image.src)}
                 alt={image.alt}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
               />
               {/* Fallback placeholder */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary flex items-center justify-center -z-10">
-                <span className="text-5xl font-serif text-primary/30">{image.id}</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary to-background flex items-center justify-center -z-10">
+                <span className="text-4xl font-serif text-primary/20">{image.id}</span>
               </div>
-              
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-primary/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+
+              {/* Hover overlay - Sutil */}
+              <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+              {/* Ícone de expandir no hover */}
+              <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-card/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 shadow-soft">
+                <ChevronRight className="w-4 h-4 text-foreground" strokeWidth={1.5} />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        {/* Lightbox */}
+        {/* Lightbox - Estilo refinado */}
         {lightboxOpen && (
-          <div 
-            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-background/98 backdrop-blur-md flex items-center justify-center p-4"
             onClick={closeLightbox}
           >
+            {/* Linha decorativa no topo */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+
             <button
-              className="absolute top-4 right-4 p-2 text-foreground hover:text-primary transition-colors"
+              className="absolute top-6 right-6 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-secondary/50"
               onClick={closeLightbox}
             >
-              <X className="w-8 h-8" />
-            </button>
-            
-            <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-foreground hover:text-primary transition-colors"
-              onClick={(e) => { e.stopPropagation(); prevImage(); }}
-            >
-              <ChevronLeft className="w-10 h-10" />
-            </button>
-            
-            <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-foreground hover:text-primary transition-colors"
-              onClick={(e) => { e.stopPropagation(); nextImage(); }}
-            >
-              <ChevronRight className="w-10 h-10" />
+              <X className="w-6 h-6" strokeWidth={1.5} />
             </button>
 
-            <div 
-              className="relative max-w-4xl max-h-[80vh] w-full aspect-square bg-muted rounded-lg overflow-hidden"
+            <button
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-full transition-all duration-300"
+              onClick={(e) => { e.stopPropagation(); prevImage(); }}
+            >
+              <ChevronLeft className="w-6 h-6" strokeWidth={1.5} />
+            </button>
+
+            <button
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-full transition-all duration-300"
+              onClick={(e) => { e.stopPropagation(); nextImage(); }}
+            >
+              <ChevronRight className="w-6 h-6" strokeWidth={1.5} />
+            </button>
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="relative max-w-5xl max-h-[85vh] w-full rounded-lg overflow-hidden shadow-soft"
               onClick={(e) => e.stopPropagation()}
             >
               {filteredImages[currentImageIndex] && (
                 <img
                   src={encodeURI(filteredImages[currentImageIndex].src)}
                   alt={filteredImages[currentImageIndex].alt}
-                  className="absolute inset-0 h-full w-full object-contain"
+                  className="w-full h-full object-contain max-h-[85vh]"
                 />
               )}
               {/* Fallback placeholder */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary flex flex-col items-center justify-center -z-10">
-                <span className="text-9xl font-serif text-primary/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary to-background flex flex-col items-center justify-center -z-10">
+                <span className="text-8xl font-serif text-primary/20">
                   {filteredImages[currentImageIndex]?.id}
                 </span>
               </div>
+            </motion.div>
+
+            {/* Contador de imagens */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-wider text-muted-foreground">
+              {currentImageIndex + 1} / {filteredImages.length}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </section>

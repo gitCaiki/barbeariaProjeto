@@ -20,7 +20,7 @@ function mapAppointment(appointment: {
   servicoNome: string
   duracao: number
   startDateTime: Date
-  endDateTime: Date
+  endDateTime: Date | null
   status: string
   createdAt: Date
 }) {
@@ -31,7 +31,7 @@ function mapAppointment(appointment: {
     servicoNome: appointment.servicoNome,
     duracao: appointment.duracao,
     startDateTime: appointment.startDateTime.toISOString(),
-    endDateTime: appointment.endDateTime.toISOString(),
+    endDateTime: appointment.endDateTime?.toISOString() ?? null,
     status: appointment.status,
     createdAt: appointment.createdAt.toISOString(),
   }

@@ -156,11 +156,6 @@ export default function Home() {
       <main>
         <Hero />
         
-        <Services 
-          onSelectService={handleToggleService}
-          selectedServices={selectedServices}
-        />
-
         <Booking 
           selectedServices={selectedServices}
           onToggleService={handleToggleService}

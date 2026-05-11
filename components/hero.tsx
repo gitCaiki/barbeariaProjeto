@@ -3,7 +3,8 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ChevronDown, Star } from "lucide-react"
+import { ChevronDown } from "lucide-react"
+import { motion } from "framer-motion"
 
 export function Hero() {
   const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -23,7 +24,7 @@ export function Hero() {
       id="inicio"
       className="relative min-h-[100svh] flex items-center justify-center overflow-hidden pt-24 pb-20"
     >
-      {/* Background Image */}
+      {/* Background limpo com imagem do barbeiro mantida */}
       <div className="absolute inset-0 bg-background">
         <Image
           src="/images/thiago-hero.png"
@@ -32,36 +33,58 @@ export function Hero() {
           className="object-contain object-center scale-160 lg:object-contain lg:object-center lg:scale-120 opacity-100"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/80 to-secondary" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        {/* Overlay claro para manter o fundo limpo */}
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/70 to-background/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute top-1/4 right-10 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-1/4 left-10 w-96 h-96 rounded-full bg-primary/10 blur-3xl" />
+      {/* Elementos decorativos sutis */}
+      <div className="absolute top-20 left-10 w-px h-32 bg-gradient-to-b from-transparent via-primary/30 to-transparent hidden lg:block" />
+      <div className="absolute top-20 right-10 w-px h-32 bg-gradient-to-b from-transparent via-primary/30 to-transparent hidden lg:block" />
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="max-w-4xl mx-auto mt-12 sm:mt-16 md:mt-24 lg:mt-32">
-          {/* Badge */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-4xl mx-auto"
+        >
+          {/* Label superior minimalista */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-8"
+          >
+            Barbearia Premium
+          </motion.p>
 
-          {/* Main Title */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-foreground mb-6 leading-tight">
+          {/* Main Title - Tipografia elegante e fina */}
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-light text-foreground mb-4 leading-[1.1] tracking-wide">
             <span className="block">Studio Feel</span>
-            <span className="block text-primary italic">by Ferreira</span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Onde a arte do corte encontra a excelência
+          {/* Subtitle com destaque dourado */}
+          <p className="text-xl md:text-2xl font-serif text-primary italic mb-8 tracking-wide">
+            by Ferreira
           </p>
 
-          {/* CTA Buttons */}
+          {/* Linha decorativa dourada */}
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-10" />
+
+          {/* Subtitle */}
+          <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-12 leading-relaxed font-light">
+            Onde a arte do corte encontra a excelência. <br className="hidden md:block" />
+            Uma experiência única em cuidados masculinos.
+          </p>
+
+          {/* CTA Buttons - Estilo refinado */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               asChild
               size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 py-6 text-lg font-medium"
+              className="bg-primary text-primary-foreground hover:opacity-90 px-10 py-6 text-base font-medium tracking-wide rounded-md transition-all duration-300 shadow-gold"
             >
               <Link href="#agendar" onClick={(e) => handleAnchorClick(e, "#agendar")}>
                 Agendar Horário
@@ -71,7 +94,7 @@ export function Hero() {
               asChild
               variant="outline"
               size="lg"
-              className="border-primary/30 text-foreground hover:bg-primary/10 px-10 py-6 text-lg"
+              className="border-primary/50 text-foreground hover:bg-primary/5 hover:border-primary px-10 py-6 text-base font-medium tracking-wide rounded-md transition-all duration-300"
             >
               <Link href="#galeria" onClick={(e) => handleAnchorClick(e, "#galeria")}>
                 Ver Galeria
@@ -79,37 +102,50 @@ export function Hero() {
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:flex md:flex-wrap items-center justify-center gap-6 md:gap-16 mt-10 sm:mt-12 pt-6 sm:pt-8 border-t border-border/50">
+          {/* Stats - Layout minimalista */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-16 pt-8 border-t border-border/30"
+          >
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-serif font-bold text-primary">10+</p>
-              <p className="text-sm text-muted-foreground mt-1">Anos de Experiência</p>
+              <p className="text-3xl md:text-4xl font-serif font-light text-primary">10+</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mt-2">Anos de Experiência</p>
             </div>
+            <div className="hidden md:block w-px h-12 bg-border/50" />
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-serif font-bold text-primary">2000+</p>
-              <p className="text-sm text-muted-foreground mt-1">Clientes Satisfeitos</p>
+              <p className="text-3xl md:text-4xl font-serif font-light text-primary">2000+</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mt-2">Clientes Satisfeitos</p>
             </div>
-            <div className="text-center col-span-2 md:col-span-1">
-              <p className="text-3xl md:text-4xl font-serif font-bold text-primary">21</p>
-              <p className="text-sm text-muted-foreground mt-1">Serviços Disponíveis</p>
+            <div className="hidden md:block w-px h-12 bg-border/50" />
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-serif font-light text-primary">21</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mt-2">Serviços Disponíveis</p>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+      {/* Scroll Indicator - Minimalista */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.6 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+      >
         <Link
           href="#agendar"
-          className="text-muted-foreground hover:text-primary transition-colors"
+          className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
           onClick={(e) => {
             e.preventDefault()
             document.getElementById("agendar")?.scrollIntoView({ behavior: "smooth" })
           }}
         >
-          <ChevronDown className="w-7 h-7 sm:w-8 sm:h-8" />
+          <span className="text-[10px] uppercase tracking-[0.2em]">Scroll</span>
+          <ChevronDown className="w-5 h-5 animate-bounce" />
         </Link>
-      </div>
+      </motion.div>
     </section>
   )
 }
