@@ -1,6 +1,6 @@
 FROM node:22-alpine AS base
 
-RUN corepack enable
+RUN corepack enable && pnpm config set ignore-build-scripts false
 
 WORKDIR /app
 
