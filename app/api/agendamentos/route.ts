@@ -51,6 +51,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Telefone inválido" }, { status: 400 })
   }
 
+  // Verifica se o número está bloqueado
+  const usuarioBloqueado = await prisma.bloqueado.findUnique({
+    where: { telefone: telefoneNormalizado },
+  })
+
+  if (usuarioBloqueado) {
+    return NextResponse.json(
+      { ok: false, error: "Agendamento negado. ERRO." },
+      { status: 403 }
+    )
+  }
+
   const startDateTime = new Date(payload.startDateTime)
   const endDateTime = new Date(startDateTime.getTime() + payload.duracao * 60 * 1000)
 

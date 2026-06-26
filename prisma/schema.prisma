@@ -8,13 +8,13 @@ datasource db {
 }
 
 model Service {
-  id          String        @id @default(uuid()) @db.Uuid
-  nome        String        @unique
-  preco       Float
-  duracao     Int
-  descricao   String?
-  imagem      String?
-  createdAt   DateTime      @default(now())
+  id           String        @id @default(uuid()) @db.Uuid
+  nome         String        @unique
+  preco        Float
+  duracao      Int
+  descricao    String?
+  imagem       String?
+  createdAt    DateTime      @default(now())
   appointments Appointment[]
 }
 
@@ -22,14 +22,14 @@ model Appointment {
   id              String            @id @default(uuid()) @db.Uuid
   clienteNome     String            @map("cliente")
   clienteTelefone String            @map("telefone")
-  servicoNome     String            @default("")
-  duracao         Int               @default(0)
+  servicoId       String?           @db.Uuid
   startDateTime   DateTime          @map("startsAt")
-  endDateTime     DateTime?
   status          AppointmentStatus @default(agendado)
   createdAt       DateTime          @default(now())
+  duracao         Int               @default(0)
+  endDateTime     DateTime?
+  servicoNome     String            @default("")
   userId          String?           @db.Uuid
-  servicoId       String?           @db.Uuid
   service         Service?          @relation(fields: [servicoId], references: [id])
   user            User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -45,8 +45,20 @@ model User {
   password     String
   createdAt    DateTime      @default(now())
   appointments Appointment[]
+  Bloqueado    Bloqueado[]
 
   @@map("Barber")
+}
+
+model Bloqueado {
+  id          String   @id @db.Uuid
+  telefone    String   @unique
+  bloqueadoEm DateTime @default(now())
+  motivo      String?
+  userId      String?  @db.Uuid
+  Barber      User?    @relation(fields: [userId], references: [id])
+
+  @@index([telefone])
 }
 
 enum AppointmentStatus {

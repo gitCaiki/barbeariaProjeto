@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { CalendarDays } from "lucide-react"
+import { CalendarDays, Ban, Trash2, Plus, Phone } from "lucide-react"
 import { adminAuth } from "@/app/admin/loggin"
 import { Calendar } from "@/components/ui/calendar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -39,6 +43,23 @@ type ApiAppointment = {
   endDateTime: string
   status: ApiAppointmentStatus
   createdAt: string
+}
+
+type Bloqueado = {
+  id: string
+  telefone: string
+  bloqueadoEm: string
+  motivo: string | null
+}
+
+function formatPhone(phone: string) {
+  const cleaned = phone.replace(/\D/g, "")
+  if (cleaned.length === 11) {
+    return `(${cleaned.slice(0,2)}) ${cleaned.slice(2,7)}-${cleaned.slice(7)}`
+  } else if (cleaned.length === 10) {
+    return `(${cleaned.slice(0,2)}) ${cleaned.slice(2,6)}-${cleaned.slice(6)}`
+  }
+  return phone
 }
 
 const toMinutes = (time: string) => {
@@ -117,6 +138,13 @@ export default function AdminPage() {
   const [filter, setFilter] = useState<FilterKey>("hoje")
   const [appointments, setAppointments] = useState<AppointmentAdmin[]>([])
 
+  // Estados para bloqueio de números
+  const [loadingBlocked, setLoadingBlocked] = useState(false)
+  const [blockedNumbers, setBlockedNumbers] = useState<Bloqueado[]>([])
+  const [newPhone, setNewPhone] = useState("")
+  const [newMotivo, setNewMotivo] = useState("")
+  const [isBlocking, setIsBlocking] = useState(false)
+
   useEffect(() => {
     const ok = adminAuth.isLoggedIn()
     setIsAuthed(ok)
@@ -150,6 +178,8 @@ export default function AdminPage() {
       .finally(() => {
         setLoadingAppointments(false)
       })
+
+    loadBlockedNumbers()
   }, [isAuthed])
 
   const todayIso = useMemo(() => formatTodayIso(), [])
@@ -207,6 +237,74 @@ export default function AdminPage() {
       setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)))
     } catch (error: unknown) {
       setApiError(error instanceof Error ? error.message : "Falha ao atualizar status")
+    }
+  }
+
+  const loadBlockedNumbers = async () => {
+    try {
+      setLoadingBlocked(true)
+      const res = await fetch("/api/admin/block-user")
+      const data = (await res.json().catch(() => null)) as null | { ok?: boolean; bloqueados?: Bloqueado[]; error?: string }
+      
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error ?? "Falha ao carregar números bloqueados")
+      }
+      
+      setBlockedNumbers(data.bloqueados ?? [])
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoadingBlocked(false)
+    }
+  }
+
+  const handleBlockNumber = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newPhone) return
+
+    try {
+      setIsBlocking(true)
+      const res = await fetch("/api/admin/block-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telefone: newPhone, motivo: newMotivo || undefined }),
+      })
+
+      const data = (await res.json().catch(() => null)) as null | { ok?: boolean; error?: string }
+      
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error ?? "Falha ao bloquear número")
+      }
+
+      setNewPhone("")
+      setNewMotivo("")
+      await loadBlockedNumbers()
+    } catch (error) {
+      console.error(error)
+      alert(error instanceof Error ? error.message : "Falha ao bloquear número")
+    } finally {
+      setIsBlocking(false)
+    }
+  }
+
+  const handleUnblockNumber = async (id: string) => {
+    if (!confirm("Tem certeza que deseja desbloquear este número?")) return
+
+    try {
+      const res = await fetch(`/api/admin/block-user?id=${id}`, {
+        method: "DELETE",
+      })
+
+      const data = (await res.json().catch(() => null)) as null | { ok?: boolean; error?: string }
+      
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error ?? "Falha ao desbloquear número")
+      }
+
+      await loadBlockedNumbers()
+    } catch (error) {
+      console.error(error)
+      alert(error instanceof Error ? error.message : "Falha ao desbloquear número")
     }
   }
 
@@ -535,6 +633,92 @@ export default function AdminPage() {
                 )
               })
             )}
+          </div>
+        </div>
+
+        {/* Seção Bloquear Números */}
+        <div className="mt-8 rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Ban className="w-4 h-4 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground font-medium">Bloquear Números</p>
+            </div>
+          </div>
+
+          <div className="p-4 space-y-6">
+            {/* Formulário para bloquear novo número */}
+            <form onSubmit={handleBlockNumber} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-1">
+                  <Label htmlFor="phone" className="text-foreground text-sm font-medium mb-2 block">Número</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      placeholder="(00) 00000-0000"
+                      value={newPhone}
+                      onChange={(e) => setNewPhone(e.target.value)}
+                      className="pl-10 bg-background/50"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-1">
+                  <Label htmlFor="motivo" className="text-foreground text-sm font-medium mb-2 block">Motivo (opcional)</Label>
+                  <Input
+                    id="motivo"
+                    placeholder="Motivo do bloqueio"
+                    value={newMotivo}
+                    onChange={(e) => setNewMotivo(e.target.value)}
+                    className="bg-background/50"
+                  />
+                </div>
+                <div className="sm:col-span-1 flex items-end">
+                  <Button
+                    type="submit"
+                    disabled={!newPhone || isBlocking}
+                    className="w-full"
+                  >
+                    {isBlocking ? "Bloqueando..." : "Bloquear Número"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+
+            {/* Lista de números bloqueados */}
+            <div>
+              <h3 className="text-sm font-medium text-foreground mb-3">Números Bloqueados</h3>
+              {loadingBlocked ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Carregando...
+                </div>
+              ) : blockedNumbers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum número bloqueado.
+                </div>
+              ) : (
+                <div className="divide-y divide-zinc-800/60">
+                  {blockedNumbers.map((blocked) => (
+                    <div key={blocked.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4">
+                      <div>
+                        <p className="text-foreground font-medium">{formatPhone(blocked.telefone)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Bloqueado em: {new Date(blocked.bloqueadoEm).toLocaleDateString("pt-BR")}
+                          {blocked.motivo && ` • ${blocked.motivo}`}
+                        </p>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleUnblockNumber(blocked.id)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Desbloquear
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

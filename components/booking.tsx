@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { motion, AnimatePresence, type Variants } from "framer-motion"
-import { Calendar, Clock, User, Phone, Check, Scissors } from "lucide-react"
+import { Calendar, Clock, User, Phone, Check, Scissors, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { services, type Service } from "@/components/services"
 import { normalizePhone } from "@/lib/phone"
 import { cn } from "@/lib/utils"
@@ -76,6 +77,7 @@ export function Booking({
   const [showSuccess, setShowSuccess] = useState(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [existingAppointments, setExistingAppointments] = useState<ExistingAppointmentApi[]>([])
+  const [showBlockedModal, setShowBlockedModal] = useState(false)
 
   const setStepAndKeepView = (nextStep: number) => {
     setStep(nextStep)
@@ -216,6 +218,12 @@ export function Booking({
     })
       .then(async (res) => {
         const data = (await res.json().catch(() => null)) as CreateAppointmentApiResponse | null
+        
+        if (res.status === 403) {
+          setShowBlockedModal(true)
+          throw new Error(data?.error ?? "Agendamento negado.")
+        }
+        
         if (!res.ok || !data?.ok || !data.agendamento) {
           throw new Error(data?.error ?? "Não foi possível salvar o agendamento.")
         }
@@ -720,6 +728,31 @@ export function Booking({
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Modal de número bloqueado */}
+      <Dialog open={showBlockedModal} onOpenChange={setShowBlockedModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <XCircle className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-serif">Agendamento Negado</DialogTitle>
+              </div>
+            </div>
+          </DialogHeader>
+          <DialogDescription className="text-muted-foreground text-center py-4">
+            ERRO.
+          </DialogDescription>
+          <Button
+            className="w-full"
+            onClick={() => setShowBlockedModal(false)}
+          >
+            Fechar
+          </Button>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }
